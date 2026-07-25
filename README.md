@@ -1,272 +1,170 @@
 # Net-Project
-# Mini Messenger - Chat 1-1 & Chat Nhóm (Python Socket + Tkinter)
+# Chat P2P
 
-Ứng dụng chat client-server viết bằng Python, hỗ trợ nhắn tin riêng (private message) và nhắn tin theo nhóm (group message) cùng lúc, lấy cảm hứng từ Messenger của Meta. Đồ án môn **Lập trình mạng**.
+Ứng dụng chat ngang hàng (peer-to-peer) bằng Python Socket + Tkinter, cho phép chat 1-1 và chat nhóm giữa nhiều máy trong LAN **mà không cần server trung tâm**. Đồ án môn Lập trình mạng.
+
+---
 
 ## Tính năng
 
-- Đăng nhập bằng username, hiển thị danh sách người dùng đang online real-time
-- Chat 1-1 (private message) giữa 2 người dùng
-- Tạo nhóm chat, mời thành viên, gửi tin nhắn nhóm (broadcast tới các thành viên)
-- Giao diện quản lý nhiều cuộc trò chuyện song song (chuyển đổi giữa các tab người/nhóm)
-- Thông báo hệ thống (user online/offline, tham gia nhóm...)
-- Mã hóa tin nhắn (TLS/SSL socket)
-- Xác thực đăng nhập (username/password, hash password)
-- Phân trang lịch sử chat (load thêm tin cũ khi scroll lên)
+- Đăng nhập/đăng ký tài khoản (lưu cục bộ trên từng máy, mật khẩu được hash)
+- Kết nối trực tiếp tới peer khác bằng địa chỉ IP:port
+- Chat 1-1 (private message) - dữ liệu đi thẳng giữa 2 máy, không qua trung gian
+- Tạo nhóm chat, mời thành viên, gửi tin nhắn nhóm
+- Xem danh sách peer đang kết nối và danh sách nhóm đã tham gia
+- Lưu lịch sử chat, xem lại theo từng trang (nút "Tải thêm lịch sử")
+- Toàn bộ thao tác qua giao diện Tkinter, không cần dòng lệnh
 
-## Kiến trúc
+---
+
+## Vì sao gọi là P2P?
+
+Mô hình truyền thống (client-server) có 1 máy chủ đứng giữa: mọi tin nhắn đều đi qua server rồi mới tới người nhận, và server là nơi duy nhất lưu dữ liệu.
+
+Ở đây thì khác: **mỗi máy chạy cùng một chương trình**, và đóng đồng thời 2 vai trò:
+
+| Vai trò | Việc làm |
+|---|---|
+| Server (thụ động) | Mở 1 cổng, lắng nghe chờ người khác kết nối vào |
+| Client (chủ động) | Tự kết nối sang máy khác khi người dùng nhập IP:port |
+
+Khi 2 máy đã bắt tay xong, kết nối giữa chúng là ngang hàng - không phân biệt "ai phục vụ ai" nữa, cả 2 đều có thể gửi và nhận bất cứ lúc nào.
 
 ```
-Server (trung tâm)
- ├── Quản lý danh sách client đang online (username <-> socket)
- ├── Quản lý danh sách group (group_name <-> danh sách thành viên)
- └── Xử lý routing tin nhắn theo loại (private / group / system)
-
-Client (Tkinter UI)
- ├── Đăng nhập với username
- ├── Danh sách người online (chat 1-1)
- ├── Danh sách group đã tham gia / tạo mới
- └── Khung chat hiển thị theo người/nhóm đang chọn
+   Peer A                              Peer B
+┌───────────┐      kết nối trực tiếp  ┌───────────┐
+│  Listener │◀────────────────────────│ Connector │
+│  Connector│────────────────────────▶│  Listener │
+└───────────┘                         └───────────┘
+     │                                      │
+  SQLite riêng                         SQLite riêng
+ (chatp2p_local.db)                  (chatp2p_local.db)
 ```
 
-## Giao thức tin nhắn (Message Protocol)
+Không có máy nào là "trung tâm" - nếu 1 máy tắt, các máy còn lại vẫn chat được với nhau bình thường (miễn là chúng đã kết nối trực tiếp).
 
-Giao tiếp giữa client và server dùng JSON qua TCP socket.
+---
 
-**Client → Server**
+## Cấu trúc project
+
+```
+chat_p2p/
+├── app.py                  # Giao diện Tkinter - nơi người dùng thao tác
+│                            #   + màn hình đăng ký/đăng nhập + nhập port lắng nghe
+│                            #   + sidebar: kết nối peer, danh sách peer, danh sách nhóm
+│                            #   + khung chat + nút "Tải thêm lịch sử"
+│
+├── network.py               # Lớp mạng - class PeerNode
+│                            #   + start_listening()   -> vai trò server (lắng nghe)
+│                            #   + connect_to_peer()   -> vai trò client (kết nối ra)
+│                            #   + send_to_peer() / send_to_many()
+│                            #   + đóng gói/mở gói JSON qua TCP (length-prefixed)
+│
+├── db.py                    # Lưu trữ SQLite cục bộ (tự tạo bảng khi chạy lần đầu)
+│                            #   + account, known_peers, groups_local,
+│                            #     group_members, messages
+│
+├── chatp2p_local.db         # File database SQLite - tự sinh ra khi chạy app.py
+│                            #   (không commit lên git, mỗi máy có file riêng)
+│
+└── README.md                 # Tài liệu này
+```
+
+**Không có file server.py riêng** như mô hình client-server, vì mỗi máy chạy chung 1 chương trình `app.py` duy nhất - bản thân nó vừa là client vừa là server nhờ `network.py`.
+
+---
+
+## Giao thức tin nhắn
+
+Dữ liệu trao đổi giữa 2 peer là JSON, có 4 byte header ghi độ dài gói tin (giúp TCP tách đúng từng message, tránh bị dính gói).
+
+| Loại (`type`) | Khi nào gửi | Nội dung |
+|---|---|---|
+| `hello` | Ngay khi 2 peer vừa kết nối | Trao đổi tên hiển thị của nhau |
+| `private_message` | Chat 1-1 | `content` |
+| `group_message` | Chat nhóm | `group_id`, `group_name`, `content` |
+| `group_invite` | Khi ai đó tạo nhóm mới có bạn trong đó | `group_id`, `group_name`, `members` |
+
+Ví dụ 1 gói tin nhắn nhóm:
 ```json
-{"type": "private", "to": "username_B", "content": "hello"}
-{"type": "group", "group": "nhom_hoc", "content": "hi all"}
-{"type": "create_group", "group": "nhom_hoc", "members": ["A", "B", "C"]}
-{"type": "join_group", "group": "nhom_hoc"}
+{"type": "group_message", "group_id": "3f2a-...", "group_name": "Nhom_LTM", "content": "chào cả nhóm"}
 ```
 
-**Server → Client**
-```json
-{"type": "private", "from": "username_A", "content": "hello"}
-{"type": "group", "group": "nhom_hoc", "from": "username_A", "content": "hi all"}
-{"type": "online_list", "users": ["A", "B", "C"]}
-{"type": "system", "content": "B đã tham gia nhóm nhom_hoc"}
+---
+
+## Lưu trữ dữ liệu
+
+Không có database dùng chung - **mỗi máy có 1 file SQLite riêng** tên `chatp2p_local.db`, tự tạo bảng khi chạy lần đầu (không cần chạy file `.sql` thủ công).
+
+Các bảng chính:
+
+- `account` - tài khoản đăng nhập trên máy đó (username, password_hash, salt)
+- `known_peers` - IP/port của các peer đã từng kết nối
+- `groups_local` - danh sách nhóm (khóa chính là UUID, không phải số tự tăng)
+- `group_members` - ai thuộc nhóm nào
+- `messages` - toàn bộ tin nhắn (cả private và group), có cột `sent_at` để phân trang
+
+**Vì sao group_id là UUID?** Vì không có server nào cấp số thứ tự chung cho tất cả máy. Người tạo nhóm tự sinh 1 UUID, gửi kèm trong `group_invite` cho các thành viên - nhờ vậy mọi máy đều lưu đúng cùng 1 mã nhóm, dù mỗi máy có database độc lập.
+
+Lịch sử chat được truy vấn phân trang bằng `LIMIT ... OFFSET ...`, mỗi lần tải thêm 20 tin nhắn cũ hơn.
+
+---
+
+## Cài đặt & chạy
+
+Yêu cầu: Python 3.9+ (không cần cài thêm thư viện ngoài - `sqlite3` và `tkinter` có sẵn).
+
+Mỗi máy chạy cùng 1 lệnh:
+```powershell
+python app.py
 ```
 
-## Lưu trữ dữ liệu (Database)
+Các bước:
+1. Đăng ký tài khoản (chỉ lưu trên máy đó) → đăng nhập
+2. Nhập port muốn lắng nghe (ví dụ `6000`)
+3. Lấy IP LAN của máy muốn kết nối tới bằng lệnh `ipconfig`, tìm dòng `IPv4 Address`
+4. Nhập IP:port đó vào ô "Kết nối" trên giao diện
+5. Sau khi kết nối, chọn peer trong danh sách để chat 1-1, hoặc chọn nhiều peer rồi bấm "Tạo nhóm"
 
-Dùng **SQL Server** để lưu trữ dữ liệu bền vững (persistent) - server ghi mọi tin nhắn, user, group vào DB, khi restart server hoặc client đăng nhập lại vẫn load được lịch sử cũ. Kết nối từ Python qua thư viện `pyodbc`.
+Muốn thử trên 1 máy: mở 2 cửa sổ `app.py`, đăng nhập 2 tài khoản khác nhau, mỗi cửa sổ dùng port khác nhau (VD 6000 và 6001), rồi kết nối `127.0.0.1:6001`.
 
-**Schema đầy đủ** (cũng là nội dung file `db_setup.sql`, chạy trong SSMS để tạo DB):
+---
 
-```sql
-CREATE DATABASE ChatDB;
-GO
+## Lưu ý kỹ thuật quan trọng
 
-USE ChatDB;
-GO
-
--- Người dùng (có password hash + salt để xác thực đăng nhập)
-CREATE TABLE users (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    username NVARCHAR(50) UNIQUE NOT NULL,
-    password_hash NVARCHAR(200) NOT NULL,
-    salt NVARCHAR(100) NOT NULL,
-    created_at DATETIME DEFAULT GETDATE()
-);
-GO
-
--- Nhóm chat
-CREATE TABLE groups (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    group_name NVARCHAR(100) UNIQUE NOT NULL,
-    created_by NVARCHAR(50) NOT NULL,
-    created_at DATETIME DEFAULT GETDATE()
-);
-GO
-
--- Thành viên nhóm (quan hệ nhiều-nhiều giữa users và groups)
-CREATE TABLE group_members (
-    group_id INT NOT NULL,
-    username NVARCHAR(50) NOT NULL,
-    joined_at DATETIME DEFAULT GETDATE(),
-    PRIMARY KEY (group_id, username),
-    FOREIGN KEY (group_id) REFERENCES groups(id)
-);
-GO
-
--- Tin nhắn (dùng chung cho cả private và group)
-CREATE TABLE messages (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    sender NVARCHAR(50) NOT NULL,
-    receiver NVARCHAR(50) NULL,     -- username nếu là private message
-    group_id INT NULL,              -- id nhóm nếu là group message
-    content NVARCHAR(MAX) NOT NULL,
-    sent_at DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (group_id) REFERENCES groups(id)
-);
-GO
-
--- Index hỗ trợ query lịch sử chat + phân trang nhanh hơn
-CREATE INDEX idx_messages_private ON messages (sender, receiver, sent_at);
-CREATE INDEX idx_messages_group ON messages (group_id, sent_at);
-GO
-```
-
-**Connection string dùng trong `server.py`** (Windows Authentication, server name `Nhom8`):
+**Bind 0.0.0.0, không phải 127.0.0.1**
 ```python
-DB_CONN_STR = (
-    "DRIVER={ODBC Driver 17 for SQL Server};"
-    "SERVER=Nhom8;"
-    "DATABASE=ChatDB;"
-    "Trusted_Connection=yes;"
-)
+self._server_sock.bind(("0.0.0.0", self.listen_port))
 ```
+`127.0.0.1` chỉ nhận kết nối từ chính máy đó. Muốn máy khác trong LAN kết nối vào được, phải bind `0.0.0.0` (mọi network interface).
 
-**Luồng hoạt động:**
-- Mỗi khi có tin nhắn gửi đi (private hoặc group), server ghi 1 dòng vào bảng `messages` trước khi forward tới người nhận
-- Khi client đăng nhập, server query lịch sử chat liên quan (private: `WHERE sender=? OR receiver=?`; group: `WHERE group_id=?`) để trả về, giúp client hiển thị lại hội thoại cũ
-- Bảng `groups` + `group_members` giúp server biết nhóm nào tồn tại và ai thuộc nhóm nào, kể cả sau khi restart
+**Mỗi peer vừa mở cổng vừa gọi ra ngoài**
+Khác với client-server (chỉ server cần mở port), ở đây máy nào cũng phải mở 1 port lắng nghe. Nếu 2 máy không cùng LAN (khác NAT/router) thì cần thêm bước port forwarding - đây là giới hạn tất yếu của mô hình P2P thuần.
 
-**Lưu ý khi code:**
-- Server xử lý nhiều client đồng thời (multi-threading) → nên dùng **connection pool** (mỗi thread lấy 1 connection riêng) thay vì dùng chung 1 connection, tránh lỗi tranh chấp
-- Đây là điểm liên hệ trực tiếp tới kiến thức môn Database (transaction, Dirty Read, concurrent access) bạn đang học song song
+**Nhóm hoạt động theo kiểu "gửi lần lượt" (flood), không phải broadcast qua server**
+Khi gửi tin nhắn nhóm, máy gửi tự lặp qua từng thành viên đang kết nối và gửi trực tiếp tới từng người. Nếu 1 thành viên đang offline lúc đó, họ sẽ không nhận được tin nhắn này (không có server nào lưu hộ để gửi lại sau).
 
-## Chat được giữa nhiều máy khác nhau (multi-device, không chỉ localhost)
-
-Để nhiều máy thật (không chỉ trên cùng 1 máy) chat được với nhau, cần lưu ý:
-
-**1. Server phải bind địa chỉ `0.0.0.0` thay vì `127.0.0.1`**
-```python
-server_socket.bind(("0.0.0.0", 12345))  # lắng nghe mọi network interface
-```
-`127.0.0.1` (localhost) chỉ cho phép kết nối từ chính máy đó, không cho máy khác trong mạng kết nối vào.
-
-**2. Client kết nối tới địa chỉ IP thật của máy chạy server**
-- Nếu cùng mạng LAN/Wifi (ví dụ phòng lab, ký túc xá dùng chung wifi): dùng IP nội bộ của máy server, xem bằng `ipconfig` (Windows) → tìm IPv4 Address (dạng `192.168.x.x`)
-```python
-client_socket.connect(("192.168.1.15", 12345))
-```
-- Nếu khác mạng (server ở nhà, client ở trường): cần **port forwarding** trên router (mở port 12345 trỏ vào máy server) và dùng IP public của mạng đó, hoặc dùng dịch vụ tunnel (ví dụ `ngrok`) để demo nhanh không cần cấu hình router
-
-**3. Firewall**
-- Windows Firewall mặc định chặn port lạ → cần mở port (Windows Defender Firewall → Inbound Rules → New Rule → cho phép port 12345 TCP)
-
-**4. SQL Server cũng cần cho phép remote connection nếu server chat và SQL Server đặt khác máy**
-- Bật TCP/IP trong SQL Server Configuration Manager
-- Mở port 1433 trên firewall máy chứa SQL Server
-- Dùng SQL Server Authentication (username/password) thay vì chỉ Windows Authentication, vì client có thể không cùng domain
-
-**Gợi ý demo/báo cáo:** chạy thử trong LAN (cùng wifi lớp/lab) là đơn giản và ổn định nhất để bảo vệ đồ án, không cần đụng tới port forwarding hay ngrok.
-
-**5. Chỉ máy server cần cài SQL Server, client thì không**
-- SQL Server chỉ cần cài **trên máy chạy `server.py`**
-- Các máy client khác (máy B, C, D...) chỉ cần Python + Tkinter, không cần cài gì thêm về DB — client chỉ gửi/nhận qua socket, còn server mới là bên trực tiếp đọc/ghi dữ liệu
-
-```
-Máy A (Server)                    Máy B, C, D... (Client)
- ├── server.py                     ├── client.py (chỉ cần Python + Tkinter)
- ├── SQL Server (ChatDB)           └── kết nối socket tới IP máy A
- └── Ghi/đọc messages, users, groups
-```
-
-- Việc chat qua nhiều máy LAN và việc lưu dữ liệu là **hai chuyện độc lập** — dù chat từ bao nhiêu máy, mọi tin nhắn vẫn đi qua server và được ghi vào SQL Server như bình thường, tắt/mở lại server vẫn còn nguyên lịch sử
-
-## Công nghệ sử dụng
-
-- Python 3
-- `socket` (built-in) - giao tiếp TCP
-- `threading` (built-in) - xử lý đa client, nhận tin không block UI
-- `tkinter` (built-in) - giao diện người dùng
-- `json` (built-in) - định dạng message
-- `pyodbc` - kết nối và thao tác với SQL Server
-
-## Cài đặt & Chạy
-
-**Yêu cầu:**
-- Python 3
-- SQL Server đã cài, server name `Nhom8`, dùng Windows Authentication
-- OpenSSL (có sẵn trong Git Bash) hoặc Python package `cryptography` để tạo certificate
-- Cài các thư viện:
-```bash
-pip install pyodbc
-```
-(Windows cần cài thêm "ODBC Driver 17 for SQL Server" nếu chưa có, tải từ Microsoft)
-
-**1. Tạo database và các bảng**
-- Mở SSMS, kết nối vào server `Nhom8`, chạy script SQL ở mục "Lưu trữ dữ liệu (Database)" phía trên (hoặc copy ra file `.sql` riêng để chạy)
-
-**2. Tạo self-signed certificate cho SSL/TLS**
-
-Server cần 1 cặp certificate + private key để bọc socket bằng SSL. Vì đây là đồ án/demo nội bộ (LAN), dùng self-signed certificate là đủ, không cần mua CA-signed certificate.
-
-Cách tạo (cần OpenSSL - có sẵn trong Git Bash / WSL / Linux / macOS), chạy trong thư mục chứa `server.py`:
-```bash
-openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=Nhom8"
-```
-Giải thích:
-- `-x509`: tạo self-signed certificate
-- `-newkey rsa:2048`: tạo key RSA 2048-bit
-- `-keyout key.pem` / `-out cert.pem`: file private key / certificate tạo ra
-- `-days 365`: hạn dùng 1 năm
-- `-nodes`: không mã hóa private key bằng password (để server tự load, không cần nhập password mỗi lần chạy)
-- `-subj "/CN=Nhom8"`: đặt Common Name là `Nhom8` (tên server), khỏi cần trả lời các câu hỏi tương tác (Country, Organization...)
-
-Sau khi chạy xong sẽ có `cert.pem` (certificate) và `key.pem` (private key, giữ bí mật). Copy cả 2 file vào thư mục chứa `server.py`; copy riêng `cert.pem` sang thư mục chứa `client.py` (client cần để verify).
-
-**Nếu máy không có OpenSSL (Windows không có sẵn):** cài Git for Windows (có kèm Git Bash + OpenSSL), mở Git Bash rồi chạy lệnh trên. Hoặc dùng Python (`pip install cryptography`) chạy script sau để tự sinh cert mà không cần OpenSSL:
-```python
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.x509.oid import NameOID
-import datetime
-
-key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-subject = issuer = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "Nhom8")])
-cert = (
-    x509.CertificateBuilder()
-    .subject_name(subject).issuer_name(issuer)
-    .public_key(key.public_key())
-    .serial_number(x509.random_serial_number())
-    .not_valid_before(datetime.datetime.utcnow())
-    .not_valid_after(datetime.datetime.utcnow() + datetime.timedelta(days=365))
-    .sign(key, hashes.SHA256())
-)
-
-with open("key.pem", "wb") as f:
-    f.write(key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.TraditionalOpenSSL,
-        encryption_algorithm=serialization.NoEncryption(),
-    ))
-with open("cert.pem", "wb") as f:
-    f.write(cert.public_bytes(serialization.Encoding.PEM))
-
-print("Đã tạo cert.pem và key.pem")
-```
-
-**3. Chạy server** (trên máy đóng vai trò server)
-```bash
-python server.py
-```
-
-**4. Chạy client** (trên máy server hoặc máy khác cùng mạng LAN)
-```bash
-python client.py
-```
-- Lần đầu: bấm **Đăng ký** để tạo tài khoản (password sẽ được hash trước khi lưu DB)
-- Sau đó: **Đăng nhập** để vào chat
-- Khi chạy client từ máy khác, sửa `SERVER_IP` trong `client.py` thành IP thật của máy server (xem mục "Chat được giữa nhiều máy")
-
-## Cấu trúc thư mục
-
-```
-├── server.py           # Server: SSL socket, xác thực, chat 1-1 + nhóm, lưu SQL Server
-├── client.py            # Client UI (Tkinter) + kết nối SSL
-├── requirements.txt       # Danh sách thư viện cần cài
-├── cert.pem / key.pem     # Certificate + private key (tự tạo, không commit lên git)
-└── README.md              # Tài liệu đầy đủ: kiến trúc, schema DB, hướng dẫn cert, cài đặt & chạy
-```
-
-> **Lưu ý bảo mật khi push lên git:** không commit `key.pem` (private key) lên git thật, dù đây chỉ là đồ án demo. Thêm `*.pem` vào `.gitignore` cho an toàn.
+---
 
 ## Hướng phát triển thêm
-- [ ] Trạng thái "đang nhập..." (typing indicator)
-- [ ] Gửi file/hình ảnh
+
+**Tự động khám phá peer (auto-discovery)**
+Hiện phải nhập tay IP:port. Có thể thêm UDP broadcast: mỗi peer định kỳ gửi gói tin "tôi đang online tại IP:port này" ra toàn mạng LAN, các peer khác lắng nghe và tự hiển thị vào danh sách "Peer khả dụng" mà không cần gõ tay.
+
+**Gửi lại tin nhắn khi peer offline (offline messaging)**
+Vì không có server lưu hộ, tin nhắn gửi lúc người nhận offline sẽ mất. Có thể khắc phục bằng cách: máy gửi tự lưu các tin chưa gửi thành công vào 1 hàng đợi cục bộ (`pending_messages`), rồi tự động gửi lại khi phát hiện peer đó kết nối lại.
+
+**Mã hóa đầu-cuối (end-to-end encryption)**
+Hiện dữ liệu truyền dạng JSON thuần, không mã hóa. Có thể thêm bước trao đổi khóa bằng Diffie-Hellman ngay sau `hello`, rồi mã hóa nội dung bằng AES trước khi gửi - đảm bảo dù ai chặn được gói tin cũng không đọc được nội dung.
+
+**Truyền file / hình ảnh**
+Giao thức hiện chỉ hỗ trợ text (`content` là string). Có thể mở rộng thêm `type: "file_transfer"`, gửi file theo từng chunk kèm metadata (tên file, kích thước, checksum) để client ghép lại.
+
+**Xác nhận đã đọc / đang gõ (read receipt, typing indicator)**
+Thêm 2 loại message mới: `typing` (gửi khi người dùng đang gõ, không lưu vào lịch sử) và `read_receipt` (gửi khi mở khung chat, đánh dấu tin nhắn cũ là "đã xem").
+
+**Danh sách "Peer đã biết" (known_peers) hiện chưa dùng để kết nối nhanh**
+Bảng này đã có sẵn trong `db.py` nhưng GUI chưa có nút "Kết nối lại" từ danh sách này - có thể bổ sung để không phải gõ lại IP:port mỗi lần mở app.
+
+**NAT traversal cho peer khác mạng**
+Hiện chỉ chạy tốt trong cùng LAN. Muốn 2 máy ở 2 mạng khác nhau (khác NAT) kết nối được mà không cần port forwarding thủ công, có thể tìm hiểu kỹ thuật STUN/TURN hoặc dùng 1 rendezvous server nhẹ chỉ để 2 peer "làm quen" nhau rồi vẫn chat trực tiếp (không phá vỡ tinh thần P2P, server đó không route tin nhắn).

@@ -49,25 +49,28 @@ Không có máy nào là "trung tâm" - nếu 1 máy tắt, các máy còn lại
 
 ```
 chat_p2p/
-├── app.py                  # Giao diện Tkinter - nơi người dùng thao tác
-│                            #   + màn hình đăng ký/đăng nhập + nhập port lắng nghe
-│                            #   + sidebar: kết nối peer, danh sách peer, danh sách nhóm
-│                            #   + khung chat + nút "Tải thêm lịch sử"
+├── gui/
+│   └── app.py                  # Giao diện Tkinter - nơi người dùng thao tác
+│                                #   + màn hình đăng ký/đăng nhập + nhập port lắng nghe
+│                                #   + sidebar: kết nối peer, danh sách peer, danh sách nhóm
+│                                #   + khung chat + nút "Tải thêm lịch sử"
 │
-├── network.py               # Lớp mạng - class PeerNode
-│                            #   + start_listening()   -> vai trò server (lắng nghe)
-│                            #   + connect_to_peer()   -> vai trò client (kết nối ra)
-│                            #   + send_to_peer() / send_to_many()
-│                            #   + đóng gói/mở gói JSON qua TCP (length-prefixed)
+├── core/
+│   ├── network.py               # Lớp mạng - class PeerNode
+│   │                            #   + start_listening()   -> vai trò server (lắng nghe)
+│   │                            #   + connect_to_peer()   -> vai trò client (kết nối ra)
+│   │                            #   + send_to_peer() / send_to_many()
+│   │                            #   + đóng gói/mở gói JSON qua TCP (length-prefixed)
+│   │
+│   └── db.py                    # Lưu trữ SQLite cục bộ (tự tạo bảng khi chạy lần đầu)
+│                                #   + account, known_peers, groups_local,
+│                                #     group_members, messages
 │
-├── db.py                    # Lưu trữ SQLite cục bộ (tự tạo bảng khi chạy lần đầu)
-│                            #   + account, known_peers, groups_local,
-│                            #     group_members, messages
+├── data/
+│   └── chatp2p_local.db         # File database SQLite - tự sinh ra khi chạy app.py
+│                                #   (không commit lên git, mỗi máy có file riêng)
 │
-├── chatp2p_local.db         # File database SQLite - tự sinh ra khi chạy app.py
-│                            #   (không commit lên git, mỗi máy có file riêng)
-│
-└── README.md                 # Tài liệu này
+└── README.md                     # Tài liệu này
 ```
 
 **Không có file server.py riêng** như mô hình client-server, vì mỗi máy chạy chung 1 chương trình `app.py` duy nhất - bản thân nó vừa là client vừa là server nhờ `network.py`.

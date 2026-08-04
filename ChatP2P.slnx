@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ChatP2P.Core/ChatP2P.Core.csproj" />
+  <Project Path="ChatP2P.Data/ChatP2P.Data.csproj" />
+  <Project Path="ChatP2P.UI/ChatP2P.UI.csproj" />
+</Solution>

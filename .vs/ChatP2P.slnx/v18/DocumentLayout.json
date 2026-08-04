@@ -1,0 +1,119 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{39085397-C5A4-7F2D-FD93-BB2C7308B0BA}|ChatP2P.UI\\ChatP2P.UI.csproj|c:\\users\\muiko\\source\\repos\\dex1966\\net-project\\chatp2p.ui\\chatp2p.ui.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{39085397-C5A4-7F2D-FD93-BB2C7308B0BA}|ChatP2P.UI\\ChatP2P.UI.csproj|solutionrelative:chatp2p.ui\\chatp2p.ui.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{906CED71-A25F-E57B-5838-228EE7FED818}|ChatP2P.Core\\ChatP2P.Core.csproj|c:\\users\\muiko\\source\\repos\\dex1966\\net-project\\chatp2p.core\\chatp2p.core.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{906CED71-A25F-E57B-5838-228EE7FED818}|ChatP2P.Core\\ChatP2P.Core.csproj|solutionrelative:chatp2p.core\\chatp2p.core.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{906CED71-A25F-E57B-5838-228EE7FED818}|ChatP2P.Core\\ChatP2P.Core.csproj|c:\\users\\muiko\\source\\repos\\dex1966\\net-project\\chatp2p.core\\models\\groupchat.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{906CED71-A25F-E57B-5838-228EE7FED818}|ChatP2P.Core\\ChatP2P.Core.csproj|solutionrelative:chatp2p.core\\models\\groupchat.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{906CED71-A25F-E57B-5838-228EE7FED818}|ChatP2P.Core\\ChatP2P.Core.csproj|c:\\users\\muiko\\source\\repos\\dex1966\\net-project\\chatp2p.core\\models\\peer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{906CED71-A25F-E57B-5838-228EE7FED818}|ChatP2P.Core\\ChatP2P.Core.csproj|solutionrelative:chatp2p.core\\models\\peer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{906CED71-A25F-E57B-5838-228EE7FED818}|ChatP2P.Core\\ChatP2P.Core.csproj|c:\\users\\muiko\\source\\repos\\dex1966\\net-project\\chatp2p.core\\models\\chatmessage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{906CED71-A25F-E57B-5838-228EE7FED818}|ChatP2P.Core\\ChatP2P.Core.csproj|solutionrelative:chatp2p.core\\models\\chatmessage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{59139708-8194-2CC0-7B44-44B2541E0E36}|ChatP2P.Data\\ChatP2P.Data.csproj|c:\\users\\muiko\\source\\repos\\dex1966\\net-project\\chatp2p.data\\chatp2p.data.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{59139708-8194-2CC0-7B44-44B2541E0E36}|ChatP2P.Data\\ChatP2P.Data.csproj|solutionrelative:chatp2p.data\\chatp2p.data.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "GroupChat.cs",
+              "DocumentMoniker": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Core\\Models\\GroupChat.cs",
+              "RelativeDocumentMoniker": "ChatP2P.Core\\Models\\GroupChat.cs",
+              "ToolTip": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Core\\Models\\GroupChat.cs",
+              "RelativeToolTip": "ChatP2P.Core\\Models\\GroupChat.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-04T14:51:29.426Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Peer.cs",
+              "DocumentMoniker": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Core\\Models\\Peer.cs",
+              "RelativeDocumentMoniker": "ChatP2P.Core\\Models\\Peer.cs",
+              "ToolTip": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Core\\Models\\Peer.cs",
+              "RelativeToolTip": "ChatP2P.Core\\Models\\Peer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-04T14:51:10.18Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Chatmessage.cs",
+              "DocumentMoniker": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Core\\Models\\Chatmessage.cs",
+              "RelativeDocumentMoniker": "ChatP2P.Core\\Models\\Chatmessage.cs",
+              "ToolTip": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Core\\Models\\Chatmessage.cs",
+              "RelativeToolTip": "ChatP2P.Core\\Models\\Chatmessage.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-04T14:50:14.372Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ChatP2P.Core.csproj",
+              "DocumentMoniker": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Core\\ChatP2P.Core.csproj",
+              "RelativeDocumentMoniker": "ChatP2P.Core\\ChatP2P.Core.csproj",
+              "ToolTip": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Core\\ChatP2P.Core.csproj",
+              "RelativeToolTip": "ChatP2P.Core\\ChatP2P.Core.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-08-04T14:48:23.908Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ChatP2P.Data.csproj",
+              "DocumentMoniker": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Data\\ChatP2P.Data.csproj",
+              "RelativeDocumentMoniker": "ChatP2P.Data\\ChatP2P.Data.csproj",
+              "ToolTip": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Data\\ChatP2P.Data.csproj",
+              "RelativeToolTip": "ChatP2P.Data\\ChatP2P.Data.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-08-04T14:48:23.005Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ChatP2P.UI.csproj",
+              "DocumentMoniker": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.UI\\ChatP2P.UI.csproj",
+              "RelativeDocumentMoniker": "ChatP2P.UI\\ChatP2P.UI.csproj",
+              "ToolTip": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.UI\\ChatP2P.UI.csproj",
+              "RelativeToolTip": "ChatP2P.UI\\ChatP2P.UI.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-08-04T14:46:22.429Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

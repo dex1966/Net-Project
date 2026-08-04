@@ -1,0 +1,12 @@
+C:\Users\muiko\source\repos\dex1966\Net-Project\ChatP2P.Core\bin\Debug\net10.0\ChatP2P.Core.deps.json
+C:\Users\muiko\source\repos\dex1966\Net-Project\ChatP2P.Core\bin\Debug\net10.0\ChatP2P.Core.dll
+C:\Users\muiko\source\repos\dex1966\Net-Project\ChatP2P.Core\bin\Debug\net10.0\ChatP2P.Core.pdb
+C:\Users\muiko\source\repos\dex1966\Net-Project\ChatP2P.Core\obj\Debug\net10.0\ChatP2P.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\muiko\source\repos\dex1966\Net-Project\ChatP2P.Core\obj\Debug\net10.0\ChatP2P.Core.AssemblyInfoInputs.cache
+C:\Users\muiko\source\repos\dex1966\Net-Project\ChatP2P.Core\obj\Debug\net10.0\ChatP2P.Core.AssemblyInfo.cs
+C:\Users\muiko\source\repos\dex1966\Net-Project\ChatP2P.Core\obj\Debug\net10.0\ChatP2P.Core.csproj.CoreCompileInputs.cache
+C:\Users\muiko\source\repos\dex1966\Net-Project\ChatP2P.Core\obj\Debug\net10.0\ChatP2P.Core.sourcelink.json
+C:\Users\muiko\source\repos\dex1966\Net-Project\ChatP2P.Core\obj\Debug\net10.0\ChatP2P.Core.dll
+C:\Users\muiko\source\repos\dex1966\Net-Project\ChatP2P.Core\obj\Debug\net10.0\refint\ChatP2P.Core.dll
+C:\Users\muiko\source\repos\dex1966\Net-Project\ChatP2P.Core\obj\Debug\net10.0\ChatP2P.Core.pdb
+C:\Users\muiko\source\repos\dex1966\Net-Project\ChatP2P.Core\obj\Debug\net10.0\ref\ChatP2P.Core.dll

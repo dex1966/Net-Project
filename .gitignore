@@ -1,0 +1,12 @@
+# Visual Studio cache/options
+.vs/
+*.user
+
+# Build output
+bin/
+obj/
+
+# SQLite database (mỗi máy tự sinh riêng)
+*.db
+*.db-shm
+*.db-wal

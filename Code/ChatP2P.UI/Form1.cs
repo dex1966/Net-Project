@@ -79,10 +79,20 @@ public partial class Form1 : Form
             Timestamp = DateTime.Now
         }, isMyMessage: true);
 
+        // 5. Tin nhắn chuyển tiếp (Forwarded)
+        var msg5 = new MessageBubbleControl();
+        msg5.SetData(new ChatMessage
+        {
+            Content = "Thông báo: Ngày mai họp nhóm Lập trình mạng lúc 9h sáng nhé!",
+            ForwardedFromId = "msg-001",
+            Timestamp = DateTime.Now
+        }, isMyMessage: false);
+
         panel.Controls.Add(msg1);
         panel.Controls.Add(msg2);
         panel.Controls.Add(msg3);
         panel.Controls.Add(msg4);
+        panel.Controls.Add(msg5);
 
         Controls.Add(panel);
         AdjustWidths();

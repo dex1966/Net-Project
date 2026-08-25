@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using ChatP2P.Core.Models;
 
@@ -8,6 +9,7 @@ namespace ChatP2P.UI.Controls
     public class MessageBubbleControl : UserControl
     {
         private Panel _bubblePanel = null!;
+        private Label _lblForwarded = null!;
         private Label _lblContent = null!;
         private Label _lblTime = null!;
 
@@ -36,6 +38,16 @@ namespace ChatP2P.UI.Controls
                 BackColor = Color.FromArgb(240, 240, 240)
             };
 
+            // Nhãn "Đã chuyển tiếp"
+            _lblForwarded = new Label
+            {
+                AutoSize = true,
+                Font = new Font("Segoe UI", 8F, FontStyle.Italic),
+                ForeColor = Color.Gray,
+                Text = "↩ Đã chuyển tiếp",
+                Visible = false
+            };
+
             // Nội dung tin nhắn
             _lblContent = new Label
             {
@@ -56,6 +68,7 @@ namespace ChatP2P.UI.Controls
                 Text = ""
             };
 
+            _bubblePanel.Controls.Add(_lblForwarded);
             _bubblePanel.Controls.Add(_lblContent);
             _bubblePanel.Controls.Add(_lblTime);
 
@@ -77,6 +90,10 @@ namespace ChatP2P.UI.Controls
 
             _isMyMessage = isMyMessage;
 
+            // Kiểm tra tin nhắn chuyển tiếp
+            bool isForwarded = !string.IsNullOrEmpty(message.ForwardedFromId);
+            _lblForwarded.Visible = isForwarded;
+
             _lblContent.Text = message.Content ?? string.Empty;
             _lblTime.Text = message.Timestamp.ToString("HH:mm");
 
@@ -94,6 +111,7 @@ namespace ChatP2P.UI.Controls
                 _bubblePanel.BackColor = Color.FromArgb(220, 248, 198);
                 _lblContent.ForeColor = Color.FromArgb(25, 25, 25);
                 _lblTime.ForeColor = Color.FromArgb(90, 110, 90);
+                _lblForwarded.ForeColor = Color.FromArgb(80, 110, 80);
             }
             else
             {
@@ -101,6 +119,7 @@ namespace ChatP2P.UI.Controls
                 _bubblePanel.BackColor = Color.FromArgb(242, 242, 242);
                 _lblContent.ForeColor = Color.FromArgb(30, 30, 30);
                 _lblTime.ForeColor = Color.Gray;
+                _lblForwarded.ForeColor = Color.Gray;
             }
         }
 
@@ -121,8 +140,15 @@ namespace ChatP2P.UI.Controls
                 }
                 _lblContent.MaximumSize = new Size(Math.Max(120, maxTextWidth), 0);
 
+                int currentTop = 8;
+                if (_lblForwarded != null && _lblForwarded.Visible)
+                {
+                    _lblForwarded.Location = new Point(12, currentTop);
+                    currentTop = _lblForwarded.Bottom + 2;
+                }
+
                 // Nội dung tin nhắn
-                _lblContent.Location = new Point(12, 8);
+                _lblContent.Location = new Point(12, currentTop);
 
                 // Thời gian nằm dưới nội dung
                 _lblTime.Location = new Point(
@@ -131,10 +157,17 @@ namespace ChatP2P.UI.Controls
                 );
 
                 // Tính kích thước panel bong bóng
-                int bubbleWidth = Math.Max(_lblContent.Width, _lblTime.Width) + 24;
+                int textAndForwardedWidth = _lblForwarded != null && _lblForwarded.Visible
+                    ? Math.Max(_lblContent.Width, _lblForwarded.Width)
+                    : _lblContent.Width;
+
+                int bubbleWidth = Math.Max(textAndForwardedWidth, _lblTime.Width) + 24;
                 int bubbleHeight = _lblTime.Bottom + 7;
 
                 _bubblePanel.Size = new Size(bubbleWidth, bubbleHeight);
+
+                // Bo tròn góc cho bong bóng chat
+                ApplyPanelRoundedRegion();
 
                 // Nếu có parent container, đảm bảo UserControl chiếm đủ chiều rộng để căn lề
                 if (Parent != null && Parent.ClientSize.Width > 0)
@@ -172,6 +205,49 @@ namespace ChatP2P.UI.Controls
             {
                 _isUpdatingLayout = false;
             }
+        }
+
+        private void ApplyPanelRoundedRegion()
+        {
+            if (_bubblePanel != null && _bubblePanel.Width > 0 && _bubblePanel.Height > 0)
+            {
+                using (GraphicsPath path = GetRoundedRectanglePath(new Rectangle(0, 0, _bubblePanel.Width, _bubblePanel.Height), 14))
+                {
+                    _bubblePanel.Region = new Region(path);
+                }
+            }
+        }
+
+        private static GraphicsPath GetRoundedRectanglePath(Rectangle bounds, int radius)
+        {
+            int diameter = radius * 2;
+            Size size = new Size(diameter, diameter);
+            Rectangle arc = new Rectangle(bounds.Location, size);
+            GraphicsPath path = new GraphicsPath();
+
+            if (radius <= 0)
+            {
+                path.AddRectangle(bounds);
+                return path;
+            }
+
+            // Top-left arc
+            path.AddArc(arc, 180, 90);
+
+            // Top-right arc
+            arc.X = bounds.Right - diameter;
+            path.AddArc(arc, 270, 90);
+
+            // Bottom-right arc
+            arc.Y = bounds.Bottom - diameter;
+            path.AddArc(arc, 0, 90);
+
+            // Bottom-left arc
+            arc.X = bounds.Left;
+            path.AddArc(arc, 90, 90);
+
+            path.CloseFigure();
+            return path;
         }
 
         private void InitializeComponent()

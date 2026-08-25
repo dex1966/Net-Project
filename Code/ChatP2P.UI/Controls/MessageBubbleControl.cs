@@ -12,6 +12,7 @@ namespace ChatP2P.UI.Controls
         private Label _lblTime = null!;
 
         private bool _isMyMessage;
+        private bool _isUpdatingLayout;
 
         public MessageBubbleControl()
         {
@@ -21,17 +22,15 @@ namespace ChatP2P.UI.Controls
         private void InitializeComponentManual()
         {
             // UserControl bên ngoài
-            AutoSize = true;
-            AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            Margin = new Padding(6, 4, 6, 4);
+            AutoSize = false;
+            Margin = new Padding(0, 4, 0, 4);
             Padding = new Padding(0);
             BackColor = Color.Transparent;
 
             // Bong bóng chat
             _bubblePanel = new Panel
             {
-                AutoSize = true,
-                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                AutoSize = false,
                 Padding = new Padding(12, 8, 12, 7),
                 Margin = new Padding(0),
                 BackColor = Color.FromArgb(240, 240, 240)
@@ -41,7 +40,7 @@ namespace ChatP2P.UI.Controls
             _lblContent = new Label
             {
                 AutoSize = true,
-                MaximumSize = new Size(350, 0),
+                MaximumSize = new Size(320, 0),
                 Font = new Font("Segoe UI", 10F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(30, 30, 30),
                 Location = new Point(12, 8),
@@ -68,8 +67,8 @@ namespace ChatP2P.UI.Controls
         /// </summary>
         /// <param name="message">Tin nhắn cần hiển thị.</param>
         /// <param name="isMyMessage">
-        /// true: tin nhắn của tôi.
-        /// false: tin nhắn nhận từ peer.
+        /// true: tin nhắn của tôi (căn phải).
+        /// false: tin nhắn nhận từ peer (căn trái).
         /// </param>
         public void SetData(ChatMessage message, bool isMyMessage)
         {
@@ -84,7 +83,6 @@ namespace ChatP2P.UI.Controls
             ApplyMessageStyle();
 
             // Phải tính lại sau khi content thay đổi
-            PerformLayout();
             UpdateBubbleLayout();
         }
 
@@ -92,46 +90,88 @@ namespace ChatP2P.UI.Controls
         {
             if (_isMyMessage)
             {
-                // Tin nhắn mình gửi
+                // Tin nhắn mình gửi (Xanh lục nhạt)
                 _bubblePanel.BackColor = Color.FromArgb(220, 248, 198);
                 _lblContent.ForeColor = Color.FromArgb(25, 25, 25);
                 _lblTime.ForeColor = Color.FromArgb(90, 110, 90);
             }
             else
             {
-                // Tin nhắn nhận
+                // Tin nhắn nhận (Xám nhạt)
                 _bubblePanel.BackColor = Color.FromArgb(242, 242, 242);
                 _lblContent.ForeColor = Color.FromArgb(30, 30, 30);
                 _lblTime.ForeColor = Color.Gray;
             }
         }
 
-        private void UpdateBubbleLayout()
+        public void UpdateBubbleLayout()
         {
-            // Nội dung
-            _lblContent.Location = new Point(12, 8);
+            if (_isUpdatingLayout || _lblContent == null || _lblTime == null || _bubblePanel == null)
+                return;
 
-            // Thời gian nằm dưới nội dung
-            _lblTime.Location = new Point(
-                12,
-                _lblContent.Bottom + 4
-            );
+            _isUpdatingLayout = true;
+            try
+            {
+                // Tính chiều rộng tối đa cho phần chữ
+                int parentWidth = Parent?.ClientSize.Width ?? Width;
+                int maxTextWidth = 320;
+                if (parentWidth > 100)
+                {
+                    maxTextWidth = Math.Min(350, (int)(parentWidth * 0.70));
+                }
+                _lblContent.MaximumSize = new Size(Math.Max(120, maxTextWidth), 0);
 
-            // Tính kích thước panel thủ công để tránh AutoSize bị lỗi layout
-            int bubbleWidth = Math.Max(
-                _lblContent.Width,
-                _lblTime.Width
-            ) + 24;
+                // Nội dung tin nhắn
+                _lblContent.Location = new Point(12, 8);
 
-            int bubbleHeight =
-                _lblTime.Bottom + 7;
+                // Thời gian nằm dưới nội dung
+                _lblTime.Location = new Point(
+                    12,
+                    _lblContent.Bottom + 4
+                );
 
-            _bubblePanel.Size = new Size(
-                bubbleWidth,
-                bubbleHeight
-            );
+                // Tính kích thước panel bong bóng
+                int bubbleWidth = Math.Max(_lblContent.Width, _lblTime.Width) + 24;
+                int bubbleHeight = _lblTime.Bottom + 7;
 
-            Size = _bubblePanel.Size;
+                _bubblePanel.Size = new Size(bubbleWidth, bubbleHeight);
+
+                // Nếu có parent container, đảm bảo UserControl chiếm đủ chiều rộng để căn lề
+                if (Parent != null && Parent.ClientSize.Width > 0)
+                {
+                    int targetWidth = Parent.ClientSize.Width - Parent.Padding.Horizontal - 20;
+                    if (targetWidth > bubbleWidth)
+                    {
+                        Width = targetWidth;
+                    }
+                    else
+                    {
+                        Width = bubbleWidth + 12;
+                    }
+                }
+                else if (Width < bubbleWidth + 12)
+                {
+                    Width = bubbleWidth + 12;
+                }
+
+                // Căn lề Trái / Phải cho bong bóng chat
+                if (_isMyMessage)
+                {
+                    // Tin nhắn gửi -> Căn PHẢI
+                    _bubblePanel.Location = new Point(Math.Max(0, Width - _bubblePanel.Width - 6), 0);
+                }
+                else
+                {
+                    // Tin nhắn nhận -> Căn TRÁI
+                    _bubblePanel.Location = new Point(6, 0);
+                }
+
+                Height = _bubblePanel.Height + 6;
+            }
+            finally
+            {
+                _isUpdatingLayout = false;
+            }
         }
 
         private void InitializeComponent()
@@ -142,13 +182,13 @@ namespace ChatP2P.UI.Controls
         protected override void OnLayout(LayoutEventArgs e)
         {
             base.OnLayout(e);
+            UpdateBubbleLayout();
+        }
 
-            if (_lblContent != null &&
-                _lblTime != null &&
-                _bubblePanel != null)
-            {
-                UpdateBubbleLayout();
-            }
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            UpdateBubbleLayout();
         }
     }
 }

@@ -31,6 +31,22 @@ public partial class Form1 : Form
             BackColor = Color.White
         };
 
+        void AdjustWidths()
+        {
+            panel.SuspendLayout();
+            int usableWidth = panel.ClientSize.Width - panel.Padding.Horizontal - 25;
+            if (usableWidth > 50)
+            {
+                foreach (Control c in panel.Controls)
+                {
+                    c.Width = usableWidth;
+                }
+            }
+            panel.ResumeLayout(true);
+        }
+
+        panel.Resize += (s, e) => AdjustWidths();
+
         // 1. Tin nhắn nhận (ngắn)
         var msg1 = new MessageBubbleControl();
         msg1.SetData(new ChatMessage
@@ -69,6 +85,7 @@ public partial class Form1 : Form
         panel.Controls.Add(msg4);
 
         Controls.Add(panel);
+        AdjustWidths();
     }
 }
 

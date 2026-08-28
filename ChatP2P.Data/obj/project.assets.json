@@ -323,19 +323,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\muiko\\.nuget\\packages\\": {}
+    "C:\\Users\\Giang\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Data\\ChatP2P.Data.csproj",
+      "projectUniqueName": "C:\\Users\\Giang\\source\\repos\\Net-Project\\ChatP2P.Data\\ChatP2P.Data.csproj",
       "projectName": "ChatP2P.Data",
-      "projectPath": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Data\\ChatP2P.Data.csproj",
-      "packagesPath": "C:\\Users\\muiko\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Data\\obj\\",
+      "projectPath": "C:\\Users\\Giang\\source\\repos\\Net-Project\\ChatP2P.Data\\ChatP2P.Data.csproj",
+      "packagesPath": "C:\\Users\\Giang\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Giang\\source\\repos\\Net-Project\\ChatP2P.Data\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\muiko\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Giang\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -350,8 +355,8 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Core\\ChatP2P.Core.csproj": {
-              "projectPath": "C:\\Users\\muiko\\source\\repos\\dex1966\\Net-Project\\ChatP2P.Core\\ChatP2P.Core.csproj"
+            "C:\\Users\\Giang\\source\\repos\\Net-Project\\ChatP2P.Core\\ChatP2P.Core.csproj": {
+              "projectPath": "C:\\Users\\Giang\\source\\repos\\Net-Project\\ChatP2P.Core\\ChatP2P.Core.csproj"
             }
           }
         }
@@ -394,7 +399,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",

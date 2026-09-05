@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <Compile Include="D:\Lập trình mạng\LoginForm.cs" Link="LoginForm.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ChatP2P.Core\ChatP2P.Core.csproj" />
     <ProjectReference Include="..\ChatP2P.Data\ChatP2P.Data.csproj" />
   </ItemGroup>

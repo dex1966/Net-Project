@@ -1,0 +1,18 @@
+using ChatP2P.UI.Form;
+
+namespace ChatP2P.UI;
+
+static class Program
+{
+    /// <summary>
+    ///  The main entry point for the application.
+    /// </summary>
+    [STAThread]
+    static void Main()
+    {
+        // To customize application configuration such as set high DPI settings or default font,
+        // see https://aka.ms/applicationconfiguration.
+        ApplicationConfiguration.Initialize();
+        Application.Run(new MessageBubbleForm()); // TODO: đổi lại thành LoginForm() sau khi test bubble xong
+    }
+}

@@ -13,6 +13,5 @@ static class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
-        Application.Run(new MessageBubbleForm()); // TODO: đổi lại thành LoginForm() sau khi test bubble xong
-    }
+        Application.Run(new MessageBubbleForm()); 
 }

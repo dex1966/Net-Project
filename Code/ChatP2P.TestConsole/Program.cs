@@ -1,6 +1,6 @@
 ﻿using ChatP2P.Core.Network;
 using ChatP2P.Core.Models;
-
+using ChatP2P.UI.;
 Console.WriteLine("=== ChatP2P Test Console ===");
 Console.Write("Nhập tên của bạn: ");
 var myName = Console.ReadLine() ?? "Unknown";

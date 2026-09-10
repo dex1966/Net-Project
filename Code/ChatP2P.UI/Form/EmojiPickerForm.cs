@@ -1,239 +1,62 @@
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
 
-namespace ChatP2P.UI.Form
+namespace ChatP2P.UI.Form;
+
+public class EmojiPickerForm : System.Windows.Forms.Form
 {
-    public class EmojiPickerForm : System.Windows.Forms.Form
+    private sealed record EmojiEntry(string Glyph, string Category, string Keywords);
+    private static readonly EmojiEntry[] Emoji =
+    [
+        new("😀", "Biểu cảm", "vui cuoi smile happy"), new("😂", "Biểu cảm", "cuoi tears laugh"), new("😍", "Biểu cảm", "yeu heart mat"), new("😢", "Biểu cảm", "buon cry"), new("😡", "Biểu cảm", "gian angry"), new("🤔", "Biểu cảm", "nghi think"), new("🥳", "Biểu cảm", "party sinh nhat"), new("😎", "Biểu cảm", "cool"),
+        new("👍", "Cử chỉ", "like dong y"), new("👎", "Cử chỉ", "dislike khong"), new("👏", "Cử chỉ", "vo tay clap"), new("🙏", "Cử chỉ", "cam on xin"), new("💪", "Cử chỉ", "manh strong"), new("👋", "Cử chỉ", "chao hello wave"),
+        new("❤️", "Cảm xúc", "tim yeu heart"), new("💔", "Cảm xúc", "that tinh broken"), new("✨", "Cảm xúc", "sparkles sao"), new("🎉", "Cảm xúc", "chuc mung party"), new("🔥", "Cảm xúc", "fire nong"), new("✅", "Cảm xúc", "done ok check"),
+        new("🐱", "Động vật", "meo cat"), new("🐶", "Động vật", "cho dog"), new("🦊", "Động vật", "cao fox"), new("🐼", "Động vật", "panda"),
+        new("🍕", "Đồ ăn", "pizza"), new("☕", "Đồ ăn", "coffee ca phe"), new("🍜", "Đồ ăn", "pho noodles"), new("🍰", "Đồ ăn", "cake banh")
+    ];
+    private readonly TextBox _search = new();
+    private readonly FlowLayoutPanel _items = new();
+    private readonly FlowLayoutPanel _categories = new();
+    private readonly Label _status = new();
+    private string _activeCategory = "Biểu cảm";
+    public event Action<string>? EmojiSelected;
+
+    public EmojiPickerForm()
     {
-        public event Action<string>? EmojiSelected;
-
-        private TextBox _txtSearch = null!;
-        private FlowLayoutPanel _flowPanel = null!;
-        private Panel _categoryBar = null!;
-        private Label _lblStatus = null!;
-
-        private static readonly Dictionary<string, string[]> Categories = new()
+        Text = "Chọn emoji"; ClientSize = new Size(365, 410); FormBorderStyle = FormBorderStyle.FixedToolWindow; MaximizeBox = false; MinimizeBox = false; ShowInTaskbar = false; TopMost = true; BackColor = Color.White;
+        var searchPanel = new Panel { Dock = DockStyle.Top, Height = 48, Padding = new Padding(10, 9, 10, 6) };
+        _search.Dock = DockStyle.Fill; _search.PlaceholderText = "🔍 Tìm emoji: vui, tim, mèo..."; _search.Font = new Font("Segoe UI", 10); _search.TextChanged += (_, _) => Render(); searchPanel.Controls.Add(_search);
+        _categories.Dock = DockStyle.Top; _categories.Height = 39; _categories.Padding = new Padding(7, 4, 4, 3); _categories.WrapContents = false; _categories.BackColor = Color.FromArgb(242, 245, 249);
+        foreach (var category in Emoji.Select(e => e.Category).Distinct())
         {
-            ["😃 Biểu cảm"] = new[]
-            {
-                "😀", "😁", "😂", "😃", "😄", "😅", "😆", "😇", "😈", "😉", "😊", "😋", "😌", "😍", "😎", "😏",
-                "😐", "😑", "😒", "😓", "😔", "😕", "😖", "😗", "😘", "😙", "😚", "😛", "😜", "😝", "😞", "😟",
-                "😠", "😡", "😢", "😣", "😤", "😥", "😦", "😧", "😨", "😩", "😪", "😫", "😬", "😭", "😮", "😯",
-                "😰", "😱", "😲", "😳", "😴", "😵", "😶", "😷", "😸", "😹", "😺", "😻", "😼", "😽", "😾", "😿",
-                "🙀", "🙁", "🙂", "🙃", "🙄", "🥺", "🥳", "🤩", "🤪", "🤫", "🤬", "🤯", "🥶", "🥵", "🥸"
-            },
-            ["👍 Cử chỉ"] = new[]
-            {
-                "👍", "👎", "👌", "👊", "✊", "✌️", "🖐️", "✋", "👐", "👏", "💪", "🤝", "🙏", "🤞", "🤟", "🤘",
-                "🤙", "👈", "👉", "👆", "👇", "🖕", "✍️", "🤳", "💅", "🦵", "🦶", "👂", "👃", "🧠", "👀"
-            },
-            ["❤️ Cảm xúc"] = new[]
-            {
-                "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕", "💞", "💓", "💗", "💖",
-                "💘", "💝", "💟", "☮️", "✝️", "☪️", "🕉️", "☸️", "✡️", "🔯", "🕎", "☯️", "☦️", "🛐", "⛎"
-            },
-            ["🐱 Động vật"] = new[]
-            {
-                "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯", "🦁", "🐮", "🐷", "🐸", "🐵", "🐔",
-                "🐧", "🐦", "🐤", "🦆", "🦅", "🦉", "🦇", "🐺", "🐗", "🐴", "🦄", "🐝", "🐛", "🦋", "🐌", "🐞"
-            },
-            ["🍕 Đồ ăn"] = new[]
-            {
-                "🍏", "🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🫐", "🍈", "🍒", "🍑", "🥭", "🍍", "🥥",
-                "🥝", "🍅", "🍆", "🥑", "🥦", "🥒", "🌶️", "🌽", "🥕", "🧄", "🧅", "🥔", "🍠", "🥐", "🥯", "🍞",
-                "🥖", "🥨", "🧀", "🥚", "🍳", "🧈", "🥞", "🧇", "🥓", "🥩", "🍗", "🍖", "🌭", "🍔", "🍟", "🍕"
-            }
-        };
-
-        private string _activeCategory = "😃 Biểu cảm";
-
-        public EmojiPickerForm()
-        {
-            InitializeUI();
+            var button = new Button { Text = category, Tag = category, AutoSize = true, Height = 28, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 8) }; button.FlatAppearance.BorderSize = 0;
+            button.Click += (_, _) => { _activeCategory = category; _search.Clear(); Render(); }; _categories.Controls.Add(button);
         }
+        _items.Dock = DockStyle.Fill; _items.AutoScroll = true; _items.Padding = new Padding(9); _items.BackColor = Color.White;
+        _status.Dock = DockStyle.Bottom; _status.Height = 24; _status.Padding = new Padding(9, 0, 0, 0); _status.TextAlign = ContentAlignment.MiddleLeft; _status.Font = new Font("Segoe UI", 8); _status.ForeColor = Color.DimGray;
+        Controls.Add(_items); Controls.Add(_categories); Controls.Add(searchPanel); Controls.Add(_status); Render();
+    }
 
-        private void InitializeUI()
+    private void Render()
+    {
+        var term = _search.Text.Trim();
+        var visible = Emoji.Where(e => string.IsNullOrWhiteSpace(term) ? e.Category == _activeCategory : e.Glyph.Contains(term, StringComparison.OrdinalIgnoreCase) || e.Keywords.Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
+        _items.SuspendLayout(); _items.Controls.Clear();
+        foreach (var entry in visible)
         {
-            Text = "Chọn Emoji";
-            Size = new Size(360, 420);
-            StartPosition = FormStartPosition.Manual;
-            FormBorderStyle = FormBorderStyle.FixedToolWindow;
-            MaximizeBox = false;
-            MinimizeBox = false;
-            ShowInTaskbar = false;
-            TopMost = true;
-            BackColor = Color.FromArgb(248, 249, 250);
-
-            // 1. Khung Tìm kiếm
-            Panel searchContainer = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 44,
-                Padding = new Padding(10, 8, 10, 8),
-                BackColor = Color.White
-            };
-
-            _txtSearch = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                Font = new Font("Segoe UI", 10F),
-                PlaceholderText = "🔍 Tìm kiếm emoji...",
-                BorderStyle = BorderStyle.FixedSingle
-            };
-            _txtSearch.TextChanged += (s, e) => FilterEmojis();
-
-            searchContainer.Controls.Add(_txtSearch);
-
-            // 2. Thanh Danh mục (Tabs)
-            _categoryBar = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 36,
-                BackColor = Color.FromArgb(238, 242, 246)
-            };
-
-            int btnWidth = 70;
-            int x = 4;
-            foreach (var category in Categories.Keys)
-            {
-                Button catBtn = new Button
-                {
-                    Text = category,
-                    Location = new Point(x, 4),
-                    Size = new Size(btnWidth, 28),
-                    FlatStyle = FlatStyle.Flat,
-                    Font = new Font("Segoe UI", 8.25F, FontStyle.Bold),
-                    Cursor = Cursors.Hand,
-                    Tag = category
-                };
-                catBtn.FlatAppearance.BorderSize = 0;
-                catBtn.Click += CategoryBtn_Click;
-                _categoryBar.Controls.Add(catBtn);
-                x += btnWidth + 2;
-            }
-
-            // 3. Panel chứa emoji (FlowLayoutPanel)
-            _flowPanel = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                AutoScroll = true,
-                Padding = new Padding(8),
-                BackColor = Color.White,
-                WrapContents = true
-            };
-
-            // 4. Thanh trạng thái ở dưới
-            _lblStatus = new Label
-            {
-                Dock = DockStyle.Bottom,
-                Height = 24,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Italic),
-                ForeColor = Color.DimGray,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(8, 0, 0, 0),
-                Text = "Nhấp vào emoji để chèn"
-            };
-
-            Controls.Add(_flowPanel);
-            Controls.Add(_categoryBar);
-            Controls.Add(searchContainer);
-            Controls.Add(_lblStatus);
-
-            UpdateCategoryTabs();
-            LoadCategory(_activeCategory);
+            var button = new Button { Text = entry.Glyph, Size = new Size(42, 42), Margin = new Padding(2), Font = new Font("Segoe UI Emoji", 15), FlatStyle = FlatStyle.Flat, BackColor = Color.White, Cursor = Cursors.Hand };
+            button.FlatAppearance.BorderSize = 0; button.FlatAppearance.MouseOverBackColor = Color.FromArgb(224, 235, 250);
+            button.Click += (_, _) => { EmojiSelected?.Invoke(entry.Glyph); _status.Text = $"Đã chọn: {entry.Glyph}"; };
+            _items.Controls.Add(button);
         }
+        _items.ResumeLayout();
+        _status.Text = visible.Count == 0 ? "Không tìm thấy emoji phù hợp." : $"{visible.Count} emoji";
+        foreach (Control control in _categories.Controls) if (control is Button button && button.Tag is string category) { button.BackColor = category == _activeCategory && string.IsNullOrWhiteSpace(term) ? Color.FromArgb(210, 228, 250) : Color.Transparent; }
+    }
 
-        private void CategoryBtn_Click(object? sender, EventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is string category)
-            {
-                _activeCategory = category;
-                _txtSearch.Clear();
-                UpdateCategoryTabs();
-                LoadCategory(_activeCategory);
-            }
-        }
-
-        private void UpdateCategoryTabs()
-        {
-            foreach (Control ctrl in _categoryBar.Controls)
-            {
-                if (ctrl is Button btn && btn.Tag is string cat)
-                {
-                    if (cat == _activeCategory)
-                    {
-                        btn.BackColor = Color.FromArgb(0, 122, 255);
-                        btn.ForeColor = Color.White;
-                    }
-                    else
-                    {
-                        btn.BackColor = Color.Transparent;
-                        btn.ForeColor = Color.FromArgb(70, 70, 70);
-                    }
-                }
-            }
-        }
-
-        private void LoadCategory(string category)
-        {
-            if (!Categories.ContainsKey(category)) return;
-            DisplayEmojis(Categories[category]);
-        }
-
-        private void FilterEmojis()
-        {
-            string keyword = _txtSearch.Text.Trim();
-            if (string.IsNullOrEmpty(keyword))
-            {
-                LoadCategory(_activeCategory);
-                return;
-            }
-
-            // Gom tất cả emoji khi đang search
-            var allEmojis = Categories.Values.SelectMany(x => x).Distinct();
-            DisplayEmojis(allEmojis);
-        }
-
-        private void DisplayEmojis(IEnumerable<string> emojis)
-        {
-            _flowPanel.SuspendLayout();
-            _flowPanel.Controls.Clear();
-
-            foreach (string emoji in emojis)
-            {
-                Button btn = new Button
-                {
-                    Text = emoji,
-                    Size = new Size(38, 38),
-                    Margin = new Padding(2),
-                    Font = new Font("Segoe UI Emoji", 14F, FontStyle.Regular),
-                    FlatStyle = FlatStyle.Flat,
-                    BackColor = Color.White,
-                    Cursor = Cursors.Hand
-                };
-                btn.FlatAppearance.BorderSize = 0;
-                btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(224, 235, 250);
-                btn.FlatAppearance.MouseDownBackColor = Color.FromArgb(190, 215, 245);
-
-                btn.Click += (s, e) =>
-                {
-                    EmojiSelected?.Invoke(emoji);
-                    _lblStatus.Text = $"Đã chọn: {emoji}";
-                };
-
-                _flowPanel.Controls.Add(btn);
-            }
-
-            _flowPanel.ResumeLayout(true);
-        }
-
-        public void ShowAtLocation(Point screenPoint)
-        {
-            Location = screenPoint;
-            Show();
-        }
+    public void ShowAtLocation(Point screenPoint)
+    {
+        Location = screenPoint;
+        if (!Visible) Show(); else Activate();
     }
 }

@@ -1,0 +1,4 @@
+# Local SQLite data created while running the desktop client
+chatp2p_local.db
+chatp2p_local.db-shm
+chatp2p_local.db-wal

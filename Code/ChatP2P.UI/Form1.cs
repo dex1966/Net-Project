@@ -14,7 +14,6 @@ namespace ChatP2P.UI
 
         public Form1()
         {
-            InitializeComponent();
             SetupTestInterface();
         }
 

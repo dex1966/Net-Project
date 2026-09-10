@@ -60,7 +60,8 @@ namespace ChatP2P.Data
                     ReplyToId TEXT,
                     ForwardedFromId TEXT,
                     Timestamp TEXT NOT NULL,
-                    IsRead INTEGER NOT NULL DEFAULT 0
+                    IsRead INTEGER NOT NULL DEFAULT 0,
+                    DeliveryStatus TEXT NOT NULL DEFAULT 'Sent'
                 );
 
                 CREATE TABLE IF NOT EXISTS Accounts (
@@ -76,6 +77,18 @@ namespace ChatP2P.Data
                 CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON Messages(Timestamp);
             ";
             command.ExecuteNonQuery();
+
+            // Migration an toàn cho các file database được tạo trước khi có trạng thái gửi.
+            try
+            {
+                var migration = connection.CreateCommand();
+                migration.CommandText = "ALTER TABLE Messages ADD COLUMN DeliveryStatus TEXT NOT NULL DEFAULT 'Sent';";
+                migration.ExecuteNonQuery();
+            }
+            catch (SqliteException)
+            {
+                // Cột đã tồn tại là trường hợp bình thường ở những lần mở app tiếp theo.
+            }
         }
     }
 }

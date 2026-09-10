@@ -10,6 +10,14 @@ namespace ChatP2P.Core.Models
         System
     }
 
+    public enum MessageDeliveryStatus
+    {
+        Sending,
+        Sent,
+        Delivered,
+        Failed
+    }
+
     public class ChatMessage
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
@@ -22,5 +30,6 @@ namespace ChatP2P.Core.Models
         public string? ForwardedFromId { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
         public bool IsRead { get; set; } = false;
+        public MessageDeliveryStatus DeliveryStatus { get; set; } = MessageDeliveryStatus.Sent;
     }
 }

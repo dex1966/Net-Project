@@ -18,9 +18,9 @@ namespace ChatP2P.Data.Repositories
             var command = connection.CreateCommand();
             command.CommandText = @"
                 INSERT INTO Messages
-                (Id, Type, SenderId, ReceiverId, GroupId, Content, ReplyToId, ForwardedFromId, Timestamp, IsRead)
+                (Id, Type, SenderId, ReceiverId, GroupId, Content, ReplyToId, ForwardedFromId, Timestamp, IsRead, DeliveryStatus)
                 VALUES
-                ($id, $type, $sender, $receiver, $group, $content, $replyTo, $forwardedFrom, $timestamp, $isRead);
+                ($id, $type, $sender, $receiver, $group, $content, $replyTo, $forwardedFrom, $timestamp, $isRead, $deliveryStatus);
             ";
             command.Parameters.AddWithValue("$id", message.Id);
             command.Parameters.AddWithValue("$type", message.Type.ToString());
@@ -32,6 +32,17 @@ namespace ChatP2P.Data.Repositories
             command.Parameters.AddWithValue("$forwardedFrom", (object?)message.ForwardedFromId ?? DBNull.Value);
             command.Parameters.AddWithValue("$timestamp", message.Timestamp.ToString("O"));
             command.Parameters.AddWithValue("$isRead", message.IsRead ? 1 : 0);
+            command.Parameters.AddWithValue("$deliveryStatus", message.DeliveryStatus.ToString());
+            command.ExecuteNonQuery();
+        }
+
+        public void UpdateDeliveryStatus(string messageId, MessageDeliveryStatus status)
+        {
+            using var connection = _dbContext.CreateConnection();
+            var command = connection.CreateCommand();
+            command.CommandText = "UPDATE Messages SET DeliveryStatus = $status WHERE Id = $id;";
+            command.Parameters.AddWithValue("$id", messageId);
+            command.Parameters.AddWithValue("$status", status.ToString());
             command.ExecuteNonQuery();
         }
 
@@ -42,7 +53,7 @@ namespace ChatP2P.Data.Repositories
             using var connection = _dbContext.CreateConnection();
             var command = connection.CreateCommand();
             command.CommandText = @"
-                SELECT Id, Type, SenderId, ReceiverId, GroupId, Content, ReplyToId, ForwardedFromId, Timestamp, IsRead
+                SELECT Id, Type, SenderId, ReceiverId, GroupId, Content, ReplyToId, ForwardedFromId, Timestamp, IsRead, DeliveryStatus
                 FROM Messages
                 WHERE (SenderId = $a AND ReceiverId = $b) OR (SenderId = $b AND ReceiverId = $a)
                 ORDER BY Timestamp DESC
@@ -67,7 +78,7 @@ namespace ChatP2P.Data.Repositories
             using var connection = _dbContext.CreateConnection();
             var command = connection.CreateCommand();
             command.CommandText = @"
-                SELECT Id, Type, SenderId, ReceiverId, GroupId, Content, ReplyToId, ForwardedFromId, Timestamp, IsRead
+                SELECT Id, Type, SenderId, ReceiverId, GroupId, Content, ReplyToId, ForwardedFromId, Timestamp, IsRead, DeliveryStatus
                 FROM Messages
                 WHERE GroupId = $groupId
                 ORDER BY Timestamp DESC
@@ -97,7 +108,8 @@ namespace ChatP2P.Data.Repositories
                 ReplyToId = reader.IsDBNull(6) ? null : reader.GetString(6),
                 ForwardedFromId = reader.IsDBNull(7) ? null : reader.GetString(7),
                 Timestamp = DateTime.Parse(reader.GetString(8)),
-                IsRead = reader.GetInt32(9) == 1
+                IsRead = reader.GetInt32(9) == 1,
+                DeliveryStatus = reader.IsDBNull(10) ? MessageDeliveryStatus.Sent : Enum.TryParse<MessageDeliveryStatus>(reader.GetString(10), out var status) ? status : MessageDeliveryStatus.Sent
             };
         }
     }
